@@ -7,8 +7,8 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         textarea { width: 100%; height: 60px; margin-bottom: 10px; }
-        button { padding: 10px; margin: 5px; cursor: pointer; }
-        button.main { background-color: blueviolet; color: #fff;}
+        button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 2px; border: 1px solid #00000086;}
+        button.main { background-color: blueviolet; color: #fff; border: 1px outset #000000;}
         pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
     </style>
 </head>
@@ -16,7 +16,7 @@
 
     <h2>🔐 Teste de Criptografia RSA</h2>
 
-    <button onclick="generateAndStoreKeys()">🔑 Gerar Chaves</button>
+    <button onclick="generateAndStoreKeys()" class="main">🔑 Gerar Chaves</button>
     <button onclick="loadStoredKeys()">📂 Carregar Chaves do Storage</button>
     <button onclick="clearStorage()">🗑 Limpar Storage</button>
     
