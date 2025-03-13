@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Criptografia RSA</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        textarea { width: 100%; height: 60px; margin-bottom: 10px; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>🔐 Teste de Criptografia RSA</h2>
+
+    <button onclick="generateAndStoreKeys()">🔑 Gerar Chaves</button>
+    <button onclick="loadStoredKeys()">📂 Carregar Chaves do Storage</button>
+    <button onclick="clearStorage()">🗑 Limpar Storage</button>
+    
+    <h3>Criptografar CPF</h3>
+    <input type="text" id="cpfInput" placeholder="Digite um CPF" />
+    <button onclick="encryptCPF()">🔒 Criptografar</button>
+
+    <h3>Descriptografar CPF</h3>
+    <button onclick="decryptCPF()">🔓 Descriptografar</button>
+
+    <h3>Resultados</h3>
+    <pre id="output"></pre>
+
+    <script>
+        async function generateKeyPair() {
+            return await window.crypto.subtle.generateKey(
+                { name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        async function exportKey(key) {
+            return JSON.stringify(await window.crypto.subtle.exportKey("jwk", key));
+        }
+
+        async function importKey(jwkKey, type) {
+            return await window.crypto.subtle.importKey(
+                "jwk",
+                JSON.parse(jwkKey),
+                { name: "RSA-OAEP", hash: "SHA-256" },
+                true,
+                type === "public" ? ["encrypt"] : ["decrypt"]
+            );
+        }
+
+        async function encryptDataRSA(publicKey, data) {
+            const encoder = new TextEncoder();
+            const encodedData = encoder.encode(data);
+            const encryptedData = await window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, encodedData);
+            return btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
+        }
+
+        async function decryptDataRSA(privateKey, encryptedData) {
+            const decodedData = new Uint8Array(atob(encryptedData).split("").map(c => c.charCodeAt(0)));
+            const decryptedData = await window.crypto.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, decodedData);
+            return new TextDecoder().decode(decryptedData);
+        }
+
+        async function generateAndStoreKeys() {
+            const { publicKey, privateKey } = await generateKeyPair();
+            const publicKeyJwk = await exportKey(publicKey);
+            const privateKeyJwk = await exportKey(privateKey);
+
+            localStorage.setItem("publicKey", publicKeyJwk);
+            localStorage.setItem("privateKey", privateKeyJwk);
+
+            document.getElementById("output").textContent = "🔑 Chaves geradas e armazenadas!";
+        }
+
+        async function loadStoredKeys() {
+            const storedPublicKey = localStorage.getItem("publicKey");
+            const storedPrivateKey = localStorage.getItem("privateKey");
+
+            if (storedPublicKey && storedPrivateKey) {
+                document.getElementById("output").textContent = "📂 Chaves carregadas do localStorage!";
+            } else {
+                document.getElementById("output").textContent = "⚠ Nenhuma chave encontrada no localStorage!";
+            }
+        }
+
+        async function encryptCPF() {
+            const cpf = document.getElementById("cpfInput").value;
+            if (!cpf) return alert("Digite um CPF!");
+
+            const storedPublicKey = localStorage.getItem("publicKey");
+            if (!storedPublicKey) return alert("⚠ Nenhuma chave pública encontrada!");
+
+            const publicKey = await importKey(storedPublicKey, "public");
+            const encryptedCpf = await encryptDataRSA(publicKey, cpf);
+            localStorage.setItem("encryptedCPF", encryptedCpf);
+
+            document.getElementById("output").textContent = `🔒 CPF Criptografado:\n${encryptedCpf}`;
+        }
+
+        async function decryptCPF() {
+            const storedPrivateKey = localStorage.getItem("privateKey");
+            const storedEncryptedCpf = localStorage.getItem("encryptedCPF");
+
+            if (!storedPrivateKey || !storedEncryptedCpf) {
+                return alert("⚠ Nenhuma chave privada ou CPF criptografado encontrado!");
+            }
+
+            const privateKey = await importKey(storedPrivateKey, "private");
+            const decryptedCpf = await decryptDataRSA(privateKey, storedEncryptedCpf);
+            document.getElementById("output").textContent = `🔓 CPF Descriptografado:\n${decryptedCpf}`;
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById("output").textContent = "🗑 LocalStorage limpo!";
+        }
+    </script>
+
+</body>
+</html>
