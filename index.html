@@ -7,17 +7,15 @@
     <title>Teste de Criptografia RSA</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --card-bg: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --accent-color: #7c3aed;
-            --border-color: #404040;
+            --bg-color: #0a0a0a;
+            --card-bg: #151515;
+            --text-primary: #e8e8e8;
+            --accent-color: #2dd4bf;
+            --border-color: #2a2a2a;
         }
 
         body {
@@ -38,68 +36,64 @@
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
         }
 
         .card-header {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--accent-color);
             padding: 1.5rem;
+            background: transparent;
         }
 
-        .btn-primary {
-            background-color: var(--accent-color);
-            border: none;
+        .btn {
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            background: transparent;
             padding: 0.75rem 1.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
+            border-radius: 6px;
         }
 
-        .btn-primary:hover {
-            background-color: #6d28d9;
+        .btn:hover {
+            background: rgba(45, 212, 191, 0.05);
             transform: translateY(-1px);
         }
 
         .form-control {
-            background-color: #363636;
+            background-color: #1a1a1a;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.75rem 1rem;
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            background-color: #404040;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.1);
         }
 
         .input-group-text {
-            background-color: #363636;
+            background-color: #1a1a1a;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
         }
 
         pre {
-            background-color: #252525;
+            background-color: #1a1a1a;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 1rem;
         }
 
         .section-title {
-            color: var(--accent-color);
             font-weight: 500;
             margin: 1.5rem 0 1rem;
             position: relative;
             padding-left: 1.5rem;
+            color: var(--accent-color);
         }
 
         .section-title::before {
@@ -109,14 +103,17 @@
             top: 50%;
             transform: translateY(-50%);
             height: 18px;
-            width: 4px;
+            width: 3px;
             background-color: var(--accent-color);
-            border-radius: 2px;
         }
 
-        .animate-smooth {
-            animation-duration: 0.4s;
-            animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hover-scale {
@@ -125,46 +122,6 @@
 
         .hover-scale:hover {
             transform: scale(1.02);
-        }
-
-        .opacity-transition {
-            transition: opacity 0.3s ease;
-        }
-
-        .btn-loading {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-loading:after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255,255,255,0.1),
-                transparent
-            );
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            100% {
-                left: 100%;
-            }
-        }
-
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fade-in 0.6s ease-out;
         }
     </style>
 </head>
@@ -176,13 +133,13 @@
             </div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    <button onclick="generateAndStoreKeys()" class="btn btn-primary hover-scale">
+                    <button onclick="generateAndStoreKeys()" class="btn hover-scale">
                         <i class="fas fa-key me-2"></i>Gerar Chaves
                     </button>
-                    <button onclick="loadStoredKeys()" class="btn btn-outline-secondary hover-scale">
+                    <button onclick="loadStoredKeys()" class="btn hover-scale">
                         <i class="fas fa-folder-open me-2"></i>Carregar
                     </button>
-                    <button onclick="clearStorage()" class="btn btn-outline-danger hover-scale">
+                    <button onclick="clearStorage()" class="btn hover-scale">
                         <i class="fas fa-trash-alt me-2"></i>Limpar
                     </button>
                 </div>
@@ -191,20 +148,20 @@
                 <div class="input-group hover-scale">
                     <span class="input-group-text"><i class="fas fa-id-card"></i></span>
                     <input type="text" id="cpfInput" class="form-control" placeholder="Digite um CPF" data-mask="000.000.000-00">
-                    <button onclick="encryptCPF()" class="btn btn-primary hover-scale">
+                    <button onclick="encryptCPF()" class="btn hover-scale">
                         <i class="fas fa-lock me-2"></i>Criptografar
                     </button>
                 </div>
                 
                 <h4 class="section-title"><i class="fas fa-lock-open me-2"></i>Descriptografar</h4>
-                <button onclick="decryptCPF()" class="btn btn-success w-100 hover-scale">
+                <button onclick="decryptCPF()" class="btn w-100 hover-scale">
                     <i class="fas fa-unlock me-2"></i>Descriptografar CPF
                 </button>
                 
                 <h4 class="section-title mt-4"><i class="fas fa-poll me-2"></i>Resultados</h4>
                 <pre id="output" class="fade-in">Aguardando operação...</pre>
             </div>
-            <div class="card-footer text-center opacity-transition">
+            <div class="card-footer text-center">
                 <small class="text-muted">Segurança de dados com criptografia assimétrica</small>
             </div>
         </div>
@@ -225,7 +182,7 @@
         async function generateAndStoreKeys() {
             try {
                 const output = document.getElementById("output");
-                output.classList.add('animate-smooth', 'animate__fadeIn');
+                output.style.opacity = '0';
                 
                 const { publicKey, privateKey } = await generateKeyPair();
                 const publicKeyJwk = await exportKey(publicKey);
@@ -234,11 +191,8 @@
                 localStorage.setItem("publicKey", publicKeyJwk);
                 localStorage.setItem("privateKey", privateKeyJwk);
 
-                output.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i> Chaves geradas e armazenadas';
-                
-                setTimeout(() => {
-                    output.classList.remove('animate-smooth', 'animate__fadeIn');
-                }, 400);
+                output.textContent = '✓ Chaves geradas e armazenadas';
+                output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
@@ -248,21 +202,17 @@
         async function loadStoredKeys() {
             try {
                 const output = document.getElementById("output");
-                output.classList.add('animate-smooth', 'animate__fadeIn');
+                output.style.opacity = '0';
                 
                 const storedPublicKey = localStorage.getItem("publicKey");
                 const storedPrivateKey = localStorage.getItem("privateKey");
 
-                if (storedPublicKey && storedPrivateKey) {
-                    output.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i> Chaves carregadas';
-                } else {
-                    output.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-2"></i> Nenhuma chave encontrada';
-                    output.classList.add("animate__shakeX");
-                }
+                output.textContent = storedPublicKey && storedPrivateKey 
+                    ? '✓ Chaves carregadas' 
+                    : '⚠ Nenhuma chave encontrada';
                 
-                setTimeout(() => {
-                    output.classList.remove('animate-smooth', 'animate__fadeIn', 'animate__shakeX');
-                }, 400);
+                output.style.opacity = '1';
+                
             } catch (error) {
                 showError(error);
             }
@@ -272,9 +222,9 @@
             try {
                 const cpf = document.getElementById("cpfInput").value.replace(/\D/g, '');
                 if (!cpf || cpf.length !== 11) {
-                    document.getElementById("cpfInput").classList.add("animate__shakeX");
+                    document.getElementById("cpfInput").classList.add('animate__shakeX');
                     setTimeout(() => {
-                        document.getElementById("cpfInput").classList.remove("animate__shakeX");
+                        document.getElementById("cpfInput").classList.remove('animate__shakeX');
                     }, 400);
                     return alert("CPF inválido!");
                 }
@@ -283,16 +233,15 @@
                 if (!storedPublicKey) return showError("Chave pública não encontrada!");
 
                 const output = document.getElementById("output");
-                output.classList.add('btn-loading');
-                output.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Criptografando...';
+                output.style.opacity = '0.5';
+                output.textContent = 'Criptografando...';
 
                 const publicKey = await importKey(storedPublicKey, "public");
                 const encryptedCpf = await encryptDataRSA(publicKey, cpf);
                 localStorage.setItem("encryptedCPF", encryptedCpf);
 
-                output.innerHTML = `<i class="fas fa-lock text-success me-2"></i> CPF criptografado:\n${encryptedCpf}`;
-                output.classList.remove('btn-loading');
-                output.classList.add('animate-smooth', 'animate__fadeIn');
+                output.textContent = `🔒 ${encryptedCpf}`;
+                output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
@@ -309,16 +258,15 @@
                 }
 
                 const output = document.getElementById("output");
-                output.classList.add('btn-loading');
-                output.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Descriptografando...';
+                output.style.opacity = '0.5';
+                output.textContent = 'Descriptografando...';
 
                 const privateKey = await importKey(storedPrivateKey, "private");
                 const decryptedCpf = await decryptDataRSA(privateKey, storedEncryptedCpf);
                 const formattedCPF = decryptedCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
                 
-                output.innerHTML = `<i class="fas fa-unlock text-success me-2"></i> CPF descriptografado:\n${formattedCPF}`;
-                output.classList.remove('btn-loading');
-                output.classList.add('animate-smooth', 'animate__fadeIn');
+                output.textContent = `🔓 ${formattedCPF}`;
+                output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
@@ -329,8 +277,8 @@
             try {
                 localStorage.clear();
                 const output = document.getElementById("output");
-                output.innerHTML = '<i class="fas fa-trash-alt text-danger me-2"></i> Storage limpo';
-                output.classList.add('animate-smooth', 'animate__fadeIn');
+                output.textContent = '🗑 Storage limpo';
+                output.style.opacity = '1';
             } catch (error) {
                 showError(error);
             }
@@ -338,14 +286,11 @@
 
         function showError(message) {
             const output = document.getElementById("output");
-            output.innerHTML = `<i class="fas fa-exclamation-circle text-danger me-2"></i> ${message}`;
-            output.classList.add("animate__shakeX");
-            setTimeout(() => {
-                output.classList.remove("animate__shakeX");
-            }, 400);
+            output.textContent = `⚠ ${message}`;
+            output.style.opacity = '1';
         }
 
-        // Funções de criptografia permanecem as mesmas
+        // Funções de criptografia originais mantidas
         // (generateKeyPair, exportKey, importKey, encryptDataRSA, decryptDataRSA)
     </script>
 </body>
