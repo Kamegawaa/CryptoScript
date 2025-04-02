@@ -179,7 +179,43 @@
         $(document).ready(function(){
             $('#cpfInput').mask('000.000.000-00');
         });
-
+    
+        // Funções de criptografia RSA
+        async function generateKeyPair() {
+            return await window.crypto.subtle.generateKey(
+                { name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+    
+        async function exportKey(key) {
+            return JSON.stringify(await window.crypto.subtle.exportKey("jwk", key));
+        }
+    
+        async function importKey(jwkKey, type) {
+            return await window.crypto.subtle.importKey(
+                "jwk",
+                JSON.parse(jwkKey),
+                { name: "RSA-OAEP", hash: "SHA-256" },
+                true,
+                type === "public" ? ["encrypt"] : ["decrypt"]
+            );
+        }
+    
+        async function encryptDataRSA(publicKey, data) {
+            const encoder = new TextEncoder();
+            const encodedData = encoder.encode(data);
+            const encryptedData = await window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, encodedData);
+            return btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
+        }
+    
+        async function decryptDataRSA(privateKey, encryptedData) {
+            const decodedData = new Uint8Array(atob(encryptedData).split("").map(c => c.charCodeAt(0)));
+            const decryptedData = await window.crypto.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, decodedData);
+            return new TextDecoder().decode(decryptedData);
+        }
+    
         async function generateAndStoreKeys() {
             try {
                 const output = document.getElementById("output");
@@ -188,18 +224,18 @@
                 const { publicKey, privateKey } = await generateKeyPair();
                 const publicKeyJwk = await exportKey(publicKey);
                 const privateKeyJwk = await exportKey(privateKey);
-
+    
                 localStorage.setItem("publicKey", publicKeyJwk);
                 localStorage.setItem("privateKey", privateKeyJwk);
-
-                output.textContent = '✓ Chaves geradas e armazenadas';
+    
+                output.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i> Chaves geradas e armazenadas';
                 output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
             }
         }
-
+    
         async function loadStoredKeys() {
             try {
                 const output = document.getElementById("output");
@@ -207,10 +243,10 @@
                 
                 const storedPublicKey = localStorage.getItem("publicKey");
                 const storedPrivateKey = localStorage.getItem("privateKey");
-
-                output.textContent = storedPublicKey && storedPrivateKey 
-                    ? '✓ Chaves carregadas' 
-                    : '⚠ Nenhuma chave encontrada';
+    
+                output.innerHTML = storedPublicKey && storedPrivateKey 
+                    ? '<i class="fas fa-check-circle text-success me-2"></i> Chaves carregadas' 
+                    : '<i class="fas fa-exclamation-triangle text-warning me-2"></i> Nenhuma chave encontrada';
                 
                 output.style.opacity = '1';
                 
@@ -218,7 +254,7 @@
                 showError(error);
             }
         }
-
+    
         async function encryptCPF() {
             try {
                 const cpf = document.getElementById("cpfInput").value.replace(/\D/g, '');
@@ -229,70 +265,68 @@
                     }, 400);
                     return alert("CPF inválido!");
                 }
-
+    
                 const storedPublicKey = localStorage.getItem("publicKey");
                 if (!storedPublicKey) return showError("Chave pública não encontrada!");
-
+    
                 const output = document.getElementById("output");
                 output.style.opacity = '0.5';
-                output.textContent = 'Criptografando...';
-
+                output.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Criptografando...';
+    
                 const publicKey = await importKey(storedPublicKey, "public");
                 const encryptedCpf = await encryptDataRSA(publicKey, cpf);
                 localStorage.setItem("encryptedCPF", encryptedCpf);
-
-                output.textContent = `🔒 ${encryptedCpf}`;
+    
+                output.innerHTML = `<i class="fas fa-lock text-success me-2"></i> ${encryptedCpf}`;
                 output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
             }
         }
-
+    
         async function decryptCPF() {
             try {
                 const storedPrivateKey = localStorage.getItem("privateKey");
                 const storedEncryptedCpf = localStorage.getItem("encryptedCPF");
-
+    
                 if (!storedPrivateKey || !storedEncryptedCpf) {
                     return showError("Dados insuficientes para descriptografia!");
                 }
-
+    
                 const output = document.getElementById("output");
                 output.style.opacity = '0.5';
-                output.textContent = 'Descriptografando...';
-
+                output.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Descriptografando...';
+    
                 const privateKey = await importKey(storedPrivateKey, "private");
                 const decryptedCpf = await decryptDataRSA(privateKey, storedEncryptedCpf);
                 const formattedCPF = decryptedCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
                 
-                output.textContent = `🔓 ${formattedCPF}`;
+                output.innerHTML = `<i class="fas fa-unlock text-success me-2"></i> ${formattedCPF}`;
                 output.style.opacity = '1';
                 
             } catch (error) {
                 showError(error);
             }
         }
-
+    
         function clearStorage() {
             try {
                 localStorage.clear();
                 const output = document.getElementById("output");
-                output.textContent = '🗑 Storage limpo';
+                output.innerHTML = '<i class="fas fa-trash-alt text-danger me-2"></i> Storage limpo';
                 output.style.opacity = '1';
             } catch (error) {
                 showError(error);
             }
         }
-
+    
         function showError(message) {
             const output = document.getElementById("output");
-            output.textContent = `⚠ ${message}`;
+            output.innerHTML = `<i class="fas fa-exclamation-circle text-danger me-2"></i> ${message}`;
             output.style.opacity = '1';
         }
-
-        // Funções de criptografia originais mantidas
-        // (generateKeyPair, exportKey, importKey, encryptDataRSA, decryptDataRSA)
     </script>
+    
 </body>
 </html>
